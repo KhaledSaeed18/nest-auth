@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -17,8 +17,22 @@ export class UsersService {
         return await this.userRepository.save(user);
     }
 
-    findAll() {
-        return this.userRepository.find();
+    async findAll(name?: string, size?: number, limit?: number) {
+        const where: any = {};
+        if (name) {
+            where.name = Like(`%${name.toLowerCase()}%`);
+        }
+        const [data, total] = await this.userRepository.findAndCount({
+            where,
+            take: limit,
+            skip: (size || 1) * (limit || 10) - (limit || 10),
+        });
+        return {
+            data,
+            total,
+            page: size || 1,
+            limit: limit || 10,
+        };
     }
 
     async findOne(id: number) {
