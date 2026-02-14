@@ -19,7 +19,7 @@ export class User {
     @Column({ unique: true, nullable: false })
     email: string;
 
-    @Column({ select: false })
+    @Column()
     password: string;
 
     @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
