@@ -11,23 +11,34 @@ export class UsersService {
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
     ) {}
-    create(createUserDto: CreateUserDto) {
-        return 'This action adds a new user';
+
+    async create(createUserDto: CreateUserDto) {
+        const user = this.userRepository.create(createUserDto);
+        return await this.userRepository.save(user);
     }
 
     findAll() {
-        return `This action returns all users`;
+        return this.userRepository.find();
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} user`;
+    async findOne(id: number) {
+        return await this.userRepository.findOneBy({ id });
     }
 
-    update(id: number, updateUserDto: UpdateUserDto) {
-        return `This action updates a #${id} user`;
+    async findByEmail(email: string) {
+        return await this.userRepository.findOneBy({ email });
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} user`;
+    async update(id: number, updateUserDto: UpdateUserDto) {
+        const result = await this.userRepository.update(id, updateUserDto);
+        return result;
+    }
+
+    async remove(id: number) {
+        const user = await this.findOne(id);
+        if (!user) {
+            throw new Error(`User with ID ${id} not found`);
+        }
+        return await this.userRepository.softRemove(user);
     }
 }
