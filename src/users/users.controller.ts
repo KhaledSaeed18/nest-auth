@@ -6,13 +6,10 @@ import {
     Patch,
     Param,
     Delete,
-    UseGuards,
-    Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -24,11 +21,7 @@ export class UsersController {
     }
 
     @Get()
-    @UseGuards(AuthGuard)
-    findAll(@Request() req) {
-        // Just for demonstration, we log the authenticated user's info here
-        // Response example: { id: 2, role: 'user', iat: 1771058064, exp: 1771144464 }
-        console.log(req.user);
+    findAll() {
         return this.usersService.findAll();
     }
 
