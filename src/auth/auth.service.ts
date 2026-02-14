@@ -1,12 +1,16 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { UsersService } from 'src/users/users.service';
-import bcrypt from 'node_modules/bcryptjs';
 import { LoginDto } from './dto/login.dto';
+import { JwtService } from '@nestjs/jwt';
+import bcrypt from 'node_modules/bcryptjs';
 
 @Injectable()
 export class AuthService {
-    constructor(private usersService: UsersService) {}
+    constructor(
+        private usersService: UsersService,
+        private jwtService: JwtService,
+    ) {}
 
     async register(registerDto: RegisterDto) {
         const user = registerDto;
@@ -26,6 +30,11 @@ export class AuthService {
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
         }
-        return { message: 'Login successful' };
+        const payload = { id: user.id, role: user.role };
+        const accessToken = this.jwtService.sign(payload);
+        return {
+            message: 'Login successful',
+            accessToken,
+        };
     }
 }

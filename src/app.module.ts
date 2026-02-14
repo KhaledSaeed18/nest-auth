@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
     imports: [
@@ -28,6 +29,11 @@ import { AuthModule } from './auth/auth.module';
                 logger: 'advanced-console',
             }),
             inject: [ConfigService],
+        }),
+        JwtModule.register({
+            global: true,
+            secret: process.env.JWT_SECRET,
+            signOptions: { expiresIn: '1d' },
         }),
         UsersModule,
         AuthModule,
