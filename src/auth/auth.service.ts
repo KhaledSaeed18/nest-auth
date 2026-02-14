@@ -37,4 +37,8 @@ export class AuthService {
             accessToken,
         };
     }
+
+    async me(userId: number) {
+        return await this.usersService.findOne(userId);
+    }
 }
