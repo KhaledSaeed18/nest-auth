@@ -73,6 +73,7 @@ export class UsersController {
                     cb(null, `${file.fieldname}-${uniqueSuffix}.${extension}`);
                 },
             }),
+            limits: { fileSize: 5 * 1024 * 1024 }, // Limit file size to 5MB
         }),
     )
     uploadFile(@UploadedFile() file: Express.Multer.File) {
