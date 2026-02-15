@@ -22,10 +22,16 @@ import { UserRole } from 'src/types/role.enum';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { ApiOkResponse } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiConsumes,
+    ApiOkResponse,
+} from '@nestjs/swagger';
 
 @Controller('users')
+@ApiBearerAuth()
 @UseGuards(AuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class UsersController {
@@ -68,6 +74,32 @@ export class UsersController {
     // This endpoint allows users to upload a media file. The file is stored in the 'uploads' directory with a unique name.
     // The response includes the original filename, size, and MIME type of the uploaded file.
     // FileInterceptor is used to handle the file upload, and diskStorage is configured to specify the destination and filename for the uploaded files.
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'Media file to upload',
+        type: 'multipart/form-data',
+        required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                },
+            },
+        },
+    })
+    @ApiOkResponse({
+        description: 'File uploaded successfully',
+        schema: {
+            type: 'object',
+            properties: {
+                filename: { type: 'string' },
+                size: { type: 'number' },
+                mimetype: { type: 'string' },
+            },
+        },
+    })
     @Post('media')
     @UseInterceptors(
         FileInterceptor('file', {
