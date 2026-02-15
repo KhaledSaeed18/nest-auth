@@ -11,6 +11,7 @@ import {
     ParseIntPipe,
     UseInterceptors,
     UploadedFile,
+    BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -74,6 +75,22 @@ export class UsersController {
                 },
             }),
             limits: { fileSize: 5 * 1024 * 1024 }, // Limit file size to 5MB
+            fileFilter: (_req, file, cb) => {
+                // Allow only image and video files
+                // This regex checks for common image and video MIME types
+                if (
+                    file.mimetype.match('^.+/(jpg|webp|jpeg|png|gif|mp4|avi)$')
+                ) {
+                    cb(null, true);
+                } else {
+                    cb(
+                        new BadRequestException(
+                            'Only image and video files are allowed',
+                        ),
+                        false,
+                    );
+                }
+            },
         }),
     )
     uploadFile(@UploadedFile() file: Express.Multer.File) {
