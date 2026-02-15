@@ -22,6 +22,8 @@ import { UserRole } from 'src/types/role.enum';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { User } from './entities/user.entity';
 
 @Controller('users')
 @UseGuards(AuthGuard, RolesGuard)
@@ -34,6 +36,10 @@ export class UsersController {
         return this.usersService.create(createUserDto);
     }
 
+    @ApiOkResponse({
+        description: 'List of users',
+        type: [User],
+    })
     @Get()
     findAll(
         @Query('name') name?: string,
