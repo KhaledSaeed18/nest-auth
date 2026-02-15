@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
     imports: [
@@ -13,7 +15,17 @@ import { JwtModule } from '@nestjs/jwt';
             isGlobal: true,
         }),
         TypeOrmModule.forRootAsync({
-            imports: [ConfigModule],
+            imports: [
+                ConfigModule,
+                ThrottlerModule.forRoot({
+                    throttlers: [
+                        {
+                            ttl: 60000, // 1 minute
+                            limit: 10, // Limit to 10 requests per minute
+                        },
+                    ],
+                }),
+            ],
             useFactory: (configService: ConfigService) => ({
                 type: configService.get<'postgres'>('DB_TYPE'),
                 host: configService.get<string>('DB_HOST'),
@@ -39,6 +51,12 @@ import { JwtModule } from '@nestjs/jwt';
         AuthModule,
     ],
     controllers: [AppController],
-    providers: [AppService],
+    providers: [
+        AppService,
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
+        },
+    ],
 })
 export class AppModule {}

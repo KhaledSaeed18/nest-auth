@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from './guards/auth.guard';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -22,6 +23,8 @@ export class AuthController {
         return this.authService.register(registerDto);
     }
 
+    // Override default configuration for Rate limiting and duration.
+    @Throttle({ default: { limit: 3, ttl: 60000 } })
     @Post('login')
     @HttpCode(HttpStatus.OK)
     login(@Body() loginDto: LoginDto) {
