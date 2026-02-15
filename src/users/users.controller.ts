@@ -9,6 +9,8 @@ import {
     UseGuards,
     Query,
     ParseIntPipe,
+    UseInterceptors,
+    UploadedFile,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -17,6 +19,8 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserRole } from 'src/types/role.enum';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @Controller('users')
 @UseGuards(AuthGuard, RolesGuard)
@@ -51,5 +55,31 @@ export class UsersController {
     @Delete(':id')
     remove(@Param('id') id: string) {
         return this.usersService.remove(+id);
+    }
+
+    // Endpoint for file upload
+    // This endpoint allows users to upload a media file. The file is stored in the 'uploads' directory with a unique name.
+    // The response includes the original filename, size, and MIME type of the uploaded file.
+    // FileInterceptor is used to handle the file upload, and diskStorage is configured to specify the destination and filename for the uploaded files.
+    @Post('media')
+    @UseInterceptors(
+        FileInterceptor('file', {
+            storage: diskStorage({
+                destination: './uploads',
+                filename: (_req, file, cb) => {
+                    const uniqueSuffix =
+                        Date.now() + '-' + Math.round(Math.random() * 1e9);
+                    const extension = file.originalname.split('.').pop();
+                    cb(null, `${file.fieldname}-${uniqueSuffix}.${extension}`);
+                },
+            }),
+        }),
+    )
+    uploadFile(@UploadedFile() file: Express.Multer.File) {
+        return {
+            filename: file.originalname,
+            size: file.size,
+            mimetype: file.mimetype,
+        };
     }
 }
